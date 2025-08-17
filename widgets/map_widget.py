@@ -18,6 +18,7 @@ class MapWidget(QWidget):
         self.geolocator = Nominatim(user_agent="world_clock_app")
         self.timezone_locations = {}
         self.coord_cache = {}
+        self.highlighted_timezone = None
 
         self.pulse_timer = QTimer(self)
         self.pulse_timer.timeout.connect(self.update_pulse)
@@ -27,6 +28,11 @@ class MapWidget(QWidget):
     def update_pulse(self):
         self.pulse_step = (self.pulse_step + 4) % 360
         if self.timezone_locations:
+            self.update()
+
+    def set_highlighted_timezone(self, timezone):
+        if self.highlighted_timezone != timezone:
+            self.highlighted_timezone = timezone
             self.update()
 
     def update_timezone_locations(self, timezones):
@@ -57,17 +63,32 @@ class MapWidget(QWidget):
             x = (lon + 180) * self.svg_widget.width() / 360
             y = (90 - lat) * self.svg_widget.height() / 180
 
+            marker_color = QColor("#00BFFF")
+
+            # Highlight effect
+            if tz == self.highlighted_timezone:
+                highlight_color = QColor(marker_color)
+                highlight_color.setAlpha(100)
+                painter.setBrush(QBrush(highlight_color))
+                painter.setPen(QPen(marker_color, 2))
+                painter.drawEllipse(QPoint(int(x), int(y)), 10, 10)
+
             # Pulsing effect
             pulse_radius = 5 + 3 * (1 + math.sin(math.radians(self.pulse_step)))
             pulse_alpha = 100 - 50 * (1 + math.sin(math.radians(self.pulse_step)))
-            pulse_color = QColor(255, 0, 0, int(pulse_alpha))
+
+            pulse_color = QColor(marker_color)
+            pulse_color.setAlpha(int(pulse_alpha))
+
             painter.setBrush(QBrush(pulse_color))
             painter.setPen(Qt.NoPen)
             painter.drawEllipse(QPoint(int(x), int(y)), int(pulse_radius), int(pulse_radius))
 
             # Main marker
-            painter.setBrush(QBrush(QColor(255, 0, 0, 200)))
-            painter.setPen(QPen(QColor(255, 0, 0), 1))
+            main_marker_color = QColor(marker_color)
+            main_marker_color.setAlpha(200)
+            painter.setBrush(QBrush(main_marker_color))
+            painter.setPen(QPen(marker_color, 1))
             painter.drawEllipse(QPoint(int(x), int(y)), 5, 5)
 
     def resizeEvent(self, event):

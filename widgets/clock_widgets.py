@@ -1,11 +1,13 @@
 from PySide6.QtWidgets import QWidget, QLabel, QVBoxLayout
-from PySide6.QtCore import QTimer, Qt, QSize, QPoint
+from PySide6.QtCore import QTimer, Qt, QSize, QPoint, Signal
 from PySide6.QtGui import QPainter, QPen, QBrush, QColor, QPolygon
 import pytz
 from datetime import datetime
 import math
 
 class DigitalClock(QWidget):
+    hover_event = Signal(str, bool) # timezone, is_entering
+
     def __init__(self, timezone_str, parent=None):
         super().__init__(parent)
         self.timezone_str = timezone_str
@@ -39,7 +41,17 @@ class DigitalClock(QWidget):
         time_str = now.strftime("%H:%M:%S")
         self.time_label.setText(time_str)
 
+    def enterEvent(self, event):
+        self.hover_event.emit(self.timezone_str, True)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.hover_event.emit(self.timezone_str, False)
+        super().leaveEvent(event)
+
 class AnalogClock(QWidget):
+    hover_event = Signal(str, bool) # timezone, is_entering
+
     def __init__(self, timezone_str, parent=None):
         super().__init__(parent)
         self.timezone_str = timezone_str
@@ -58,6 +70,12 @@ class AnalogClock(QWidget):
 
 
     def paintEvent(self, event):
+        # Color Palette
+        face_color = QColor("#3C3C3C")
+        marker_color = QColor("#CCCCCC")
+        hour_minute_hand_color = QColor("#CCCCCC")
+        second_hand_color = QColor("#00BFFF") # DeepSkyBlue
+
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
 
@@ -66,12 +84,12 @@ class AnalogClock(QWidget):
         painter.setWindow(-50, -50, 100, 100)
 
         # Clock face
-        painter.setPen(QPen(Qt.black, 2))
-        painter.setBrush(QBrush(Qt.white))
+        painter.setPen(QPen(marker_color, 2))
+        painter.setBrush(QBrush(face_color))
         painter.drawEllipse(-48, -48, 96, 96)
 
         # Hour markers
-        painter.setPen(QPen(Qt.black, 2))
+        painter.setPen(QPen(marker_color, 2))
         for i in range(12):
             painter.save()
             painter.rotate(30 * i)
@@ -90,7 +108,7 @@ class AnalogClock(QWidget):
         # Second hand
         second_angle = (second + microsecond / 1000000.0) * 6.0
         painter.save()
-        painter.setPen(QPen(Qt.red, 1))
+        painter.setPen(QPen(second_hand_color, 1))
         painter.rotate(second_angle)
         painter.drawLine(0, 15, 0, -45)
         painter.restore()
@@ -99,7 +117,7 @@ class AnalogClock(QWidget):
         minute_angle = (minute + second / 60.0 + microsecond / 60000000.0) * 6.0
         painter.save()
         painter.setPen(Qt.NoPen)
-        painter.setBrush(QBrush(Qt.darkGray))
+        painter.setBrush(QBrush(hour_minute_hand_color))
         painter.rotate(minute_angle)
         painter.drawPolygon(QPolygon([QPoint(-2, 10), QPoint(2, 10), QPoint(0, -40)]))
         painter.restore()
@@ -108,13 +126,21 @@ class AnalogClock(QWidget):
         hour_angle = (hour % 12 + minute / 60.0 + second / 3600.0) * 30.0
         painter.save()
         painter.setPen(Qt.NoPen)
-        painter.setBrush(QBrush(Qt.black))
+        painter.setBrush(QBrush(hour_minute_hand_color))
         painter.rotate(hour_angle)
         painter.drawPolygon(QPolygon([QPoint(-3, 10), QPoint(3, 10), QPoint(0, -25)]))
         painter.restore()
 
         # Center circle
-        painter.setBrush(QBrush(Qt.red))
+        painter.setBrush(QBrush(second_hand_color))
         painter.drawEllipse(-2, -2, 4, 4)
 
         self.city_label.setGeometry(0, self.height() - 30, self.width(), 30)
+
+    def enterEvent(self, event):
+        self.hover_event.emit(self.timezone_str, True)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        self.hover_event.emit(self.timezone_str, False)
+        super().leaveEvent(event)

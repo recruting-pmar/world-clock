@@ -13,6 +13,31 @@ class WorldClock(QMainWindow):
         self.setWindowTitle("World Clock")
         self.setGeometry(100, 100, 800, 800)
 
+        self.setStyleSheet("""
+            QMainWindow, QWidget {
+                background-color: #2E2E2E;
+            }
+            QLabel {
+                color: #FFFFFF;
+                font-family: 'Segoe UI', Arial, sans-serif;
+            }
+            QMenuBar {
+                background-color: #3C3C3C;
+                color: #FFFFFF;
+            }
+            QMenuBar::item:selected {
+                background-color: #5A5A5A;
+            }
+            QMenu {
+                background-color: #3C3C3C;
+                color: #FFFFFF;
+                border: 1px solid #5A5A5A;
+            }
+            QMenu::item:selected {
+                background-color: #5A5A5A;
+            }
+        """)
+
         main_widget = QWidget()
         self.setCentralWidget(main_widget)
         main_layout = QVBoxLayout(main_widget)
@@ -88,6 +113,12 @@ class WorldClock(QMainWindow):
         timezones = [c.timezone_str for c in self.clocks]
         self.map_widget.update_timezone_locations(timezones)
 
+    def handle_clock_hover(self, timezone, is_entering):
+        if is_entering:
+            self.map_widget.set_highlighted_timezone(timezone)
+        else:
+            self.map_widget.set_highlighted_timezone(None)
+
     def add_clock(self, timezone, clock_type="analog", row=None, col=None):
         if len(self.clocks) >= 8 and (row is None or col is None):
             print("Maximum number of clocks reached.")
@@ -106,6 +137,8 @@ class WorldClock(QMainWindow):
 
         opacity_effect = QGraphicsOpacityEffect(clock_widget)
         clock_widget.setGraphicsEffect(opacity_effect)
+
+        clock_widget.hover_event.connect(self.handle_clock_hover)
 
         self.grid_layout.addWidget(clock_widget, row, col)
         self.clocks.append(clock_widget)
