@@ -10,6 +10,7 @@ class DigitalClock(QWidget):
 
     def __init__(self, timezone_str, parent=None):
         super().__init__(parent)
+        self.setAttribute(Qt.WA_Hover, True)
         self.timezone_str = timezone_str
         self.timezone = pytz.timezone(timezone_str)
 
@@ -41,19 +42,20 @@ class DigitalClock(QWidget):
         time_str = now.strftime("%H:%M:%S")
         self.time_label.setText(time_str)
 
-    def enterEvent(self, event):
+    def hoverEnterEvent(self, event):
         self.hover_event.emit(self.timezone_str, True)
-        super().enterEvent(event)
+        super().hoverEnterEvent(event)
 
-    def leaveEvent(self, event):
+    def hoverLeaveEvent(self, event):
         self.hover_event.emit(self.timezone_str, False)
-        super().leaveEvent(event)
+        super().hoverLeaveEvent(event)
 
 class AnalogClock(QWidget):
     hover_event = Signal(str, bool) # timezone, is_entering
 
     def __init__(self, timezone_str, parent=None):
         super().__init__(parent)
+        self.setAttribute(Qt.WA_Hover, True)
         self.timezone_str = timezone_str
         self.timezone = pytz.timezone(timezone_str)
         self.setMinimumSize(QSize(200, 200))
@@ -137,10 +139,10 @@ class AnalogClock(QWidget):
 
         self.city_label.setGeometry(0, self.height() - 30, self.width(), 30)
 
-    def enterEvent(self, event):
+    def hoverEnterEvent(self, event):
         self.hover_event.emit(self.timezone_str, True)
-        super().enterEvent(event)
+        super().hoverEnterEvent(event)
 
-    def leaveEvent(self, event):
+    def hoverLeaveEvent(self, event):
         self.hover_event.emit(self.timezone_str, False)
-        super().leaveEvent(event)
+        super().hoverLeaveEvent(event)

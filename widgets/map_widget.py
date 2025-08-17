@@ -15,7 +15,7 @@ class MapWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.svg_widget)
 
-        self.geolocator = Nominatim(user_agent="world_clock_app")
+        self.geolocator = Nominatim(user_agent="world_clock_app", timeout=10)
         self.timezone_locations = {}
         self.coord_cache = {}
         self.highlighted_timezone = None
@@ -67,11 +67,11 @@ class MapWidget(QWidget):
 
             # Highlight effect
             if tz == self.highlighted_timezone:
-                highlight_color = QColor(marker_color)
-                highlight_color.setAlpha(100)
+                highlight_color = QColor("#FFD700") # Gold
+                highlight_color.setAlpha(150)
                 painter.setBrush(QBrush(highlight_color))
-                painter.setPen(QPen(marker_color, 2))
-                painter.drawEllipse(QPoint(int(x), int(y)), 10, 10)
+                painter.setPen(QPen(highlight_color.darker(150), 2))
+                painter.drawEllipse(QPoint(int(x), int(y)), 12, 12)
 
             # Pulsing effect
             pulse_radius = 5 + 3 * (1 + math.sin(math.radians(self.pulse_step)))
