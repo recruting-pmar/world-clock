@@ -2,7 +2,8 @@
 
 A modern and feature-rich world clock application built with Python and PySide6. This application allows you to track the time in multiple cities around the world with a beautiful and intuitive interface.
 
-![Screenshot](assets/world-clock.png)
+![Screenshot](assets/screenshot_placeholder.png)
+*(Screenshot placeholder)*
 
 ## Features
 
@@ -38,7 +39,7 @@ A modern and feature-rich world clock application built with Python and PySide6.
 
 Run the application with the following command:
 ```bash
-python world_clock.py
+python main.py
 ```
 
 ## How It Works
